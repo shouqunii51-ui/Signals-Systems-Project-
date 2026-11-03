@@ -53,7 +53,7 @@ st.sidebar.header("🎛️ Real-Time Control Panel")
 irradiance_level = st.sidebar.slider("Solar Irradiance Level (%)", min_value=0, max_value=100, value=75, step=5)
 show_fft = st.sidebar.checkbox("Show Fourier Transform Frequency Analysis", value=True)
 
-# Calculations: Solar ranges from 0 to 6 Watts exactly matching the slider
+# Calculations: Solar ranges strictly from 0 to 6 Watts based on slider percentage
 p_solar = 6.0 * (irradiance_level / 100.0)  
 p_led = 3.5  # Constant LED load power (Watts)
 p_batt = p_solar - p_led  # Net Power: Positive = Charging, Negative = Discharging
@@ -99,14 +99,14 @@ else:
 
 fig.patch.set_facecolor('#ffffff')
 
-# 1. Solar Panel Power Plot (0W to 6W) - Line perfectly matches p_solar value
+# 1. Solar Panel Power Plot (Dynamic wave centered strictly around p_solar)
 solar_wave = p_solar + 0.05 * np.sin(t)
 ax1.set_facecolor('#fdfbf7')
 ax1.plot(t, solar_wave, color='#b7791f', linewidth=2.5, label='Solar Power $P_{solar}$')
 ax1.axhline(y=p_solar, color='#e53e3e', linestyle='--', linewidth=2, label=f'Slider Value: {p_solar:.2f}W')
 ax1.set_ylabel("Power (W)", fontsize=9, fontweight='bold')
 ax1.set_title("1️⃣ Solar Panel Power Generation (0W - 6W Range)", fontsize=11, fontweight='bold', color='#1a365d')
-ax1.set_ylim(-0.5, 6.8)
+ax1.set_ylim(-0.5, 7.0)
 ax1.legend(loc='upper right', frameon=True, facecolor='white')
 ax1.grid(True, linestyle=':', alpha=0.6)
 
@@ -121,7 +121,7 @@ ax2.set_ylim(0, 5.0)
 ax2.legend(loc='upper right', frameon=True, facecolor='white')
 ax2.grid(True, linestyle=':', alpha=0.6)
 
-# 3. Battery Power Plot (Charging / Discharging) - Line matches p_batt value
+# 3. Battery Power Plot (Charging / Discharging matching p_batt perfectly)
 batt_wave = p_batt + 0.04 * np.sin(t)
 ax3.set_facecolor('#fdfbf7')
 ax3.plot(t, batt_wave, color='#38a169' if p_batt >= 0 else '#e53e3e', linewidth=2.5, label='Battery Power $P_{batt}$')
