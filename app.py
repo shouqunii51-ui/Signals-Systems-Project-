@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling
+# Custom Styling for a Professional UI
 st.markdown("""
     <style>
     .main { background-color: #f8fafc; }
@@ -48,12 +48,16 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar Control Panel (Using number input combined with clean slider to avoid layout glitch)
+# Sidebar Control Panel - Replaced standard slider with a clean select_slider to avoid visual glitches
 st.sidebar.header("🎛️ Real-Time Control Panel")
-irradiance_level = st.sidebar.slider("Solar Irradiance Level (%)", min_value=0, max_value=100, value=75, step=5)
+irradiance_level = st.sidebar.select_slider(
+    "Solar Irradiance Level (%)",
+    options=[0, 10, 20, 30, 40, 50, 60, 70, 75, 80, 90, 100],
+    value=75
+)
 show_fft = st.sidebar.checkbox("Show Fourier Transform Frequency Analysis", value=True)
 
-# Calculations: Solar ranges strictly from 0 to 6 Watts based on slider percentage
+# Calculations: Solar ranges strictly from 0 to 6 Watts based on selected percentage
 p_solar = 6.0 * (irradiance_level / 100.0)  
 p_led = 3.5  # Constant LED load power (Watts)
 p_batt = p_solar - p_led  # Net Power: Positive = Charging, Negative = Discharging
@@ -103,7 +107,7 @@ fig.patch.set_facecolor('#ffffff')
 solar_wave = p_solar + 0.05 * np.sin(t)
 ax1.set_facecolor('#fdfbf7')
 ax1.plot(t, solar_wave, color='#b7791f', linewidth=2.5, label='Solar Power $P_{solar}$')
-ax1.axhline(y=p_solar, color='#e53e3e', linestyle='--', linewidth=2, label=f'Slider Target: {p_solar:.2f}W')
+ax1.axhline(y=p_solar, color='#e53e3e', linestyle='--', linewidth=2, label=f'Target: {p_solar:.2f}W')
 ax1.set_ylabel("Power (W)", fontsize=9, fontweight='bold')
 ax1.set_title("1️⃣ Solar Panel Power Generation (0W - 6W Range)", fontsize=11, fontweight='bold', color='#1a365d')
 ax1.set_ylim(-0.5, 7.0)
@@ -145,7 +149,7 @@ if show_fft:
     ax4.set_xlabel("Frequency (rad/s)", fontsize=10, fontweight='bold')
     ax4.set_ylabel("Magnitude", fontsize=9, fontweight='bold')
     ax4.set_title("4️⃣ Frequency-Domain Analysis (Fourier Transform Spectrum)", fontsize=11, fontweight='bold', color='#1a365d')
-    ax4.legend(loc='upper right', frameon=Thread, facecolor='white') if 'Thread' in globals() else ax4.legend(loc='upper right', frameon=True, facecolor='white')
+    ax4.legend(loc='upper right', frameon=True, facecolor='white')
     ax4.grid(True, linestyle=':', alpha=0.6)
 
 plt.tight_layout()
