@@ -2,83 +2,130 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 
-# إعدادات صفحة Streamlit وتصميم الواجهة
+# Page Configuration
 st.set_page_config(
-    page_title="PV Signal & Fourier Analysis",
-    page_icon="☀️",
-    layout="centered"
+    page_title="Solar PV & BMS | Signals and Systems",
+    page_icon="⚡",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# تصميم العنوان الرئيسي بستايل جذاب
-st.markdown("<h1 style='text-align: center; color: #ff8c00;'>☀️ Solar PV System: Fourier Analysis & Signal Processing</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #555;'>ربط مفاهيم الإشارات والنظم بمشروع الطاقة الشمسية وإدارة البطاريات</h4>", unsafe_allow_html=True)
-st.markdown("---")
-
-# مقدمة مبسطة واحترافية
+# Custom CSS Styling for an Extraordinary UI
 st.markdown("""
-### 📌 فكرة الربط بالمادة (Signals & Systems):
-عندما يقرأ مستشعر **INA219** الجهد والتيار من اللوح الشمسي (**Solar PV**)، فإن القراءات لا تكون ثابتة تماماً بسبب التشويش البيئي والكهربائي (مثل الإضاءة المتذبذبة أو الظل). 
-من خلال **تحويل فورييه (Fourier Transform)**، نستطيع الانتقال من **النطاق الزمني (Time Domain)** إلى **النطاق الترددي (Frequency Domain)** لتحليل طيف الترددات، وكشف مركبات التشويش ومعالجتها قبل إرسالها لشريحة تنظيم الشحن **BQ25185**.
-""")
+    <style>
+    .main {
+        background-color: #f8fafc;
+    }
+    .stSidebar {
+        background-color: #1e293b;
+    }
+    h1, h2, h3 {
+        font-family: 'Times New Roman', Times, serif;
+        color: #1a365d;
+    }
+    .metric-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        border-left: 5px solid #b7791f;
+        text-align: center;
+    }
+    .highlight-box {
+        background: #fffaf0;
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid #feebc8;
+        margin-bottom: 20px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
+# Header Section
+st.markdown("<h1 style='text-align: center; color: #1a365d;'>⚡ Solar PV & Battery Management System</h1>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #b7791f; font-weight: normal;'>Dynamic Signal Analysis & Simulation (ECE270 Course Project)</h3>", unsafe_allow_html=True)
 st.markdown("---")
 
-# لوحة التحكم الجانبية (Sliders)
-st.sidebar.header("🎛️ تحكم المحاكاة")
-noise_level = st.sidebar.slider("شدة التشويش (Noise Intensity)", 0.0, 2.0, 0.6)
-freq_signal = st.sidebar.slider("تردد تغير الإضاءة الأساسي", 0.5, 3.0, 1.0)
+# Introduction Banner
+st.markdown("""
+<div class="highlight-box">
+    <h4 style='margin-top: 0; color: #2c5282;'>📌 Project Core Architecture</h4>
+    <p style='margin-bottom: 0; color: #4a5568;'>
+    This interactive dashboard bridges theoretical <b>Signals and Systems</b> concepts with practical renewable energy hardware. 
+    Using standardized test signals (Unit Step & Ramp), we evaluate the transient stability and tracking accuracy of the <b>BQ25185</b> power-path management IC integrated with an <b>INA219</b> sensor.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
-# توليد البيانات (Time Domain)
+# Sidebar Control Panel
+st.sidebar.header("🎛️ Simulation Control Panel")
+st.sidebar.markdown("Configure system parameters and test signals interactively:")
+
+signal_type = st.sidebar.selectbox(
+    "Select Test Signal", 
+    ["Unit Step Response (Sudden Load Change)", "Ramp Response (Gradual Solar Irradiance)"]
+)
+
+system_speed = st.sidebar.slider("System Damping / Speed Factor ($\omega_n / \zeta$)", 0.5, 3.0, 1.2)
+
+# Main Computation
 t = np.linspace(0, 10, 400)
-# إشارة اللوح الشمسي الحقيقية مضاف لها تشويش (Noise)
-clean_signal = 3.5 + 1.2 * np.sin(2 * np.pi * freq_signal * t)
-np.random.seed(42)
-noise = np.random.normal(0, noise_level, len(t))
-noisy_signal = clean_signal + noise
 
-# تطبيق تحويل فورييه التقريبي (FFT) لعرض النطاق الترددي
-fft_values = np.fft.fft(noisy_signal)
-fft_freq = np.fft.fftfreq(len(t), t[1] - t[0])
-# نأخذ النصف الموجب فقط من الترددات
-positive_freqs = fft_freq[:len(fft_freq)//2]
-fft_magnitude = np.abs(fft_values)[:len(fft_values)//2]
+fig, ax = plt.subplots(figsize=(10, 4.8))
+fig.patch.set_facecolor('#ffffff')
+ax.set_facecolor('#fdfbf7')
 
-# رسم الرسوم البيانية بشكل أنيق
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(9, 7))
+if "Step" in signal_type:
+    # Unit Step Response Calculation
+    y = 5.0 * (1 - np.exp(-system_speed * t) * np.cos(2 * t))
+    ax.plot(t, y, label='Battery Voltage Output $y(t)$', color='#1f77b4', linewidth=3)
+    ax.axhline(y=5.0, color='#e53e3e', linestyle='--', label='Target Stable Voltage (5.0V)', linewidth=2)
+    ax.set_title("1️⃣ Unit Step Response: Transient Load Switching Analysis", fontsize=12, fontweight='bold', color='#1a365d')
+    ax.set_ylabel("Voltage (V)", fontsize=10, fontweight='bold')
+else:
+    # Ramp Response Calculation
+    input_ramp = 0.5 * t
+    output_response = 0.5 * (t - (1/system_speed) * (1 - np.exp(-system_speed * t)))
+    ax.plot(t, input_ramp, label='Input Solar Energy Ramp $r(t)$', color='#dd6b20', linestyle='--', linewidth=2.5)
+    ax.plot(t, output_response, label='System Tracked Response $y(t)$', color='#38a169', linewidth=3)
+    ax.set_title("2️⃣ Ramp Response: Solar Irradiance Tracking Accuracy", fontsize=12, fontweight='bold', color='#1a365d')
+    ax.set_ylabel("Amplitude / Voltage", fontsize=10, fontweight='bold')
 
-# 1. Time Domain Plot
-ax1.plot(t, noisy_signal, label='Raw Sensor Signal (With Noise)', color='#ff7f0e', alpha=0.7, linewidth=1.5)
-ax1.plot(t, clean_signal, label='Ideal PV Signal', color='#2ca02c', linewidth=2.5, linestyle='--')
-ax1.set_title("1️⃣ Time Domain: إشارة الجهد الفردية من مستشعر INA219 مع التشويش", fontsize=11, fontweight='bold')
-ax1.set_xlabel("Time ($s$)", fontsize=9)
-ax1.set_ylabel("Voltage ($V$)", fontsize=9)
-ax1.legend(loc='upper right')
-ax1.grid(True, linestyle=':', alpha=0.6)
-
-# 2. Frequency Domain Plot (Fourier Transform)
-ax2.plot(positive_freqs, fft_magnitude, color='#1f77b4', linewidth=2)
-ax2.fill_between(positive_freqs, fft_magnitude, color='#1f77b4', alpha=0.3)
-ax2.set_title("2️⃣ Frequency Domain (Fourier Transform): تحليل طيف الترددات وكشف مركبات التشويش", fontsize=11, fontweight='bold')
-ax2.set_xlabel("Frequency ($Hz$)", fontsize=9)
-ax2.set_ylabel("Magnitude", fontsize=9)
-ax2.grid(True, linestyle=':', alpha=0.6)
-ax2.set_xlim(0, 5)
+ax.set_xlabel("Time ($s$)", fontsize=10, fontweight='bold')
+ax.legend(loc='lower right', frameon=True, facecolor='white', edgecolor='none')
+ax.grid(True, linestyle=':', alpha=0.6, color='#cbd5e0')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
 
 plt.tight_layout()
 st.pyplot(fig)
 
 st.markdown("---")
 
-# تقسيم الشاشة لجزئين لتوضيح الفوائد بشكل منظم
+# Metric / Info Cards Columns
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("### 📈 Time Domain Analysis")
-    st.info("يظهر لك كيف تتأثر قراءات اللوح الشمسي بالتغيرات اللحظية، وكيف يمكننا مراقبة الجهد والتيار بشكل مستمر عبر الأردوينو.")
+    st.markdown("""
+    <div class="metric-card">
+        <h4 style='color: #1a365d; margin-top: 0;'>📈 Transient Stability (Step Test)</h4>
+        <p style='text-align: justify; color: #4a5568;'>
+        Demonstrates how the BQ25185 power management IC absorbs sudden load applications, ensuring the output voltage stabilizes rapidly at 5.0V with minimal overshoot and controlled damping.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
-    st.markdown("### 🔍 Fourier Spectrum")
-    st.info("يظهر لك تحويل فورييه للترددات، وهو المفتاح لمعرفة مصدر أي تذبذب غير مرغوب فيه وتصفية البيانات بذكاء قبل دخولها للبطارية.")
+    st.markdown("""
+    <div class="metric-card" style='border-left-color: #38a169;'>
+        <h4 style='color: #1a365d; margin-top: 0;'>📉 Tracking Efficiency (Ramp Test)</h4>
+        <p style='text-align: justify; color: #4a5568;'>
+        Evaluates the Arduino and INA219 sensor loop's ability to track continuous, gradual environmental shifts (like morning sunrise) without phase lagging or steady-state errors.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: #888;'>تم تصميم هذه المحاكاة خصيصاً لمشروع تخرج/عرض مادة الإشارات والنظم ⚡</p>", unsafe_layout_html=True)
+st.markdown("<p style='text-align: center; color: #718096; font-size: 13pt;'>ECE270 Signals and Systems Course Project | Group 05 | Developed with Streamlit & Python</p>", unsafe_allow_html=True)
+
+
