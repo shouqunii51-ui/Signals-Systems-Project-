@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS Styling for UI & Fixing Slider Track Display
+# Clean CSS Styling (Removed broken slider overrides)
 st.markdown("""
     <style>
     .main { background-color: #f8fafc; }
@@ -29,10 +29,6 @@ st.markdown("""
         border-radius: 10px;
         border: 1px solid #feebc8;
         margin-bottom: 20px;
-    }
-    /* Fix Streamlit Slider Track and Fill Direction */
-    div[data-baseweb="slider"] div {
-        background-color: transparent;
     }
     </style>
 """, unsafe_allow_html=True)
