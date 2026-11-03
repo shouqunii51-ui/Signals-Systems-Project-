@@ -10,22 +10,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS Styling for High-Speed & Modern UI
+# Custom CSS Styling for UI
 st.markdown("""
     <style>
     .main { background-color: #f8fafc; }
     h1, h2, h3 { font-family: 'Times New Roman', Times, serif; color: #1a365d; }
     .metric-card {
         background: white;
-        padding: 20px;
-        border-radius: 12px;
+        padding: 15px;
+        border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         border-left: 5px solid #b7791f;
         text-align: center;
     }
     .highlight-box {
         background: #fffaf0;
-        padding: 20px;
+        padding: 15px;
         border-radius: 10px;
         border: 1px solid #feebc8;
         margin-bottom: 20px;
@@ -35,102 +35,99 @@ st.markdown("""
 
 # Header Section
 st.markdown("<h1 style='text-align: center; color: #1a365d;'>⚡ Solar PV & Battery Management System</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #b7791f; font-weight: normal;'>Interactive 3-State Solar Irradiance & BMS Simulation (ECE270)</h3>", unsafe_allow_html=True)
+st.markdown("<h3 style='text-align: center; color: #b7791f; font-weight: normal;'>3-Graph Power Analysis: Solar, LED & Battery (ECE270)</h3>", unsafe_allow_html=True)
 st.markdown("---")
 
 # Introduction Banner
 st.markdown("""
 <div class="highlight-box">
-    <h4 style='margin-top: 0; color: #2c5282;'>📌 Dynamic 3-State Irradiance Control</h4>
+    <h4 style='margin-top: 0; color: #2c5282;'>📌 Real-Time 3-Power States Control</h4>
     <p style='margin-bottom: 0; color: #4a5568;'>
-    Move the slider to simulate <b>3 distinct solar intensity states</b> (Low / Medium / High). Notice how the system's power generation ($P_{solar}$), LED consumption ($P_{led}$), and Battery State instantly adapt in real-time.
+    Adjust the solar irradiance slider. The system dynamically updates <b>Solar Power (5W - 6W)</b>, <b>LED Load Power</b>, and the resulting <b>Battery Power</b> across three distinct real-time plots.
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar Control Panel with Instant Response
+# Sidebar Control Panel
 st.sidebar.header("🎛️ Real-Time Control Panel")
-st.sidebar.markdown("Select Solar Irradiance Level:")
+irradiance_level = st.sidebar.slider("Solar Irradiance Level (%)", min_value=0, max_value=100, value=75, step=5)
 
-# 3 States Slider / Radio mapped instantly
-irradiance_state = st.sidebar.select_slider(
-    "Solar Irradiance State",
-    options=["State 1: Low (Cloudy / Morning)", "State 2: Medium (Partial Sun)", "State 3: High (Peak Sunlight)"],
-    value="State 2: Medium (Partial Sun)"
-)
+# Calculations based on irradiance (Solar panel range: 5 to 6 Watts)
+p_solar = 5.0 + (1.0 * (irradiance_level / 100.0))  # Ranges from 5.0W to 6.0W
+p_led = 4.5  # Constant LED load power (Watts)
+p_batt = p_solar - p_led  # Surplus or Deficit Power for the Battery (+ Charging, - Discharging)
 
-# Define parameters based on the selected state for instant calculation
-if "Low" in irradiance_state:
-    p_solar = 1.2  # Watts
-    p_led = 2.5    # Watts
-    batt_state = "Discharging 🔋 (Deficit Power)"
-    state_color = "#e53e3e"
-    voltage_factor = 3.5
-elif "Medium" in irradiance_state:
-    p_solar = 3.0  # Watts
-    p_led = 2.0    # Watts
-    batt_state = "Balanced ⚖️ (Stable)"
-    state_color = "#d69e2e"
-    voltage_factor = 4.5
-else:
-    p_solar = 5.5  # Watts
-    p_led = 1.5    # Watts
-    batt_state = "Charging ⚡ (Surplus Energy)"
-    state_color = "#38a169"
-    voltage_factor = 5.0
-
-# Display Instant Metrics in Columns
-col_m1, col_m2, col_m3 = st.columns(3)
-with col_m1:
+# Display Metrics
+col1, col2, col3 = st.columns(3)
+with col1:
     st.markdown(f"""
     <div class="metric-card">
-        <h4 style='color: #1a365d; margin-top: 0;'>☀️ P Solar Panel</h4>
-        <h2 style='color: #b7791f; margin: 0;'>{p_solar} W</h2>
+        <h4 style='color: #1a365d; margin: 0;'>☀️ Solar Panel Power</h4>
+        <h2 style='color: #b7791f; margin: 5px 0 0 0;'>{p_solar:.2f} W</h2>
     </div>
     """, unsafe_allow_html=True)
-with col_m2:
+with col2:
     st.markdown(f"""
     <div class="metric-card" style='border-left-color: #3182ce;'>
-        <h4 style='color: #1a365d; margin-top: 0;'>💡 P LED Load</h4>
-        <h2 style='color: #3182ce; margin: 0;'>{p_led} W</h2>
+        <h4 style='color: #1a365d; margin: 0;'>💡 LED Load Power</h4>
+        <h2 style='color: #3182ce; margin: 5px 0 0 0;'>{p_led:.2f} W</h2>
     </div>
     """, unsafe_allow_html=True)
-with col_m3:
+with col3:
+    batt_color = "#38a169" if p_batt >= 0 else "#e53e3e"
+    batt_status = "Charging ⚡" if p_batt >= 0 else "Discharging 🔋"
     st.markdown(f"""
-    <div class="metric-card" style='border-left-color: {state_color};'>
-        <h4 style='color: #1a365d; margin-top: 0;'>🔋 Battery State</h4>
-        <h4 style='color: {state_color}; margin: 0;'>{batt_state}</h4>
+    <div class="metric-card" style='border-left-color: {batt_color};'>
+        <h4 style='color: #1a365d; margin: 0;'>🔋 Battery Power ({batt_status})</h4>
+        <h2 style='color: {batt_color}; margin: 5px 0 0 0;'>{p_batt:+.2f} W</h2>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Fast Matplotlib Plotting responding instantly to the state
-t = np.linspace(0, 10, 200)
-fig, ax = plt.subplots(figsize=(10, 4.2))
+# Fast Matplotlib Generation for 3 Separate Plots
+t = np.linspace(0, 10, 150)
+
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 9), sharex=True)
 fig.patch.set_facecolor('#ffffff')
-ax.set_facecolor('#fdfbf7')
 
-# Dynamic response curve adjusting instantly to voltage_factor
-y = voltage_factor * (1 - np.exp(-1.5 * t) * np.cos(t))
+# 1. Solar Panel Power Plot
+solar_wave = p_solar + 0.1 * np.sin(t)
+ax1.set_facecolor('#fdfbf7')
+ax1.plot(t, solar_wave, color='#b7791f', linewidth=2.5, label='Solar Power $P_{solar}$')
+ax1.axhline(y=p_solar, color='#1a365d', linestyle='--', alpha=0.7, label=f'Mean: {p_solar:.2f}W')
+ax1.set_ylabel("Power (W)", fontsize=9, fontweight='bold')
+ax1.set_title("1️⃣ Solar Panel Power Generation (5W - 6W Range)", fontsize=11, fontweight='bold', color='#1a365d')
+ax1.set_ylim(4.5, 6.5)
+ax1.legend(loc='upper right', frameon=True, facecolor='white')
+ax1.grid(True, linestyle=':', alpha=0.6)
 
-ax.plot(t, y, label=f'System Voltage Response ($P_{{solar}}$ = {p_solar}W)', color=state_color, linewidth=3)
-ax.axhline(y=voltage_factor, color='#1a365d', linestyle='--', label=f'Operating Level ({voltage_factor}V)', linewidth=2)
+# 2. LED Load Power Plot
+led_wave = p_led + 0.05 * np.cos(2*t)
+ax2.set_facecolor('#fdfbf7')
+ax2.plot(t, led_wave, color='#3182ce', linewidth=2.5, label='LED Load $P_{led}$')
+ax2.axhline(y=p_led, color='#1a365d', linestyle='--', alpha=0.7, label=f'Constant: {p_led}W')
+ax2.set_ylabel("Power (W)", fontsize=9, fontweight='bold')
+ax2.set_title("2️⃣ LED Load Power Consumption", fontsize=11, fontweight='bold', color='#1a365d')
+ax2.set_ylim(3.0, 6.0)
+ax2.legend(loc='upper right', frameon=True, facecolor='white')
+ax2.grid(True, linestyle=':', alpha=0.6)
 
-ax.set_title(f"Real-Time System Response under {irradiance_state}", fontsize=12, fontweight='bold', color='#1a365d')
-ax.set_xlabel("Time ($s$)", fontsize=10, fontweight='bold')
-ax.set_ylabel("Voltage (V)", fontsize=10, fontweight='bold')
-ax.set_ylim(0, 6.0)
-ax.legend(loc='lower right', frameon=True, facecolor='white', edgecolor='none')
-ax.grid(True, linestyle=':', alpha=0.6, color='#cbd5e0')
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
+# 3. Battery Power Plot
+batt_wave = p_batt + 0.08 * np.sin(t)
+ax3.set_facecolor('#fdfbf7')
+ax3.plot(t, batt_wave, color='#38a169' if p_batt >= 0 else '#e53e3e', linewidth=2.5, label='Battery Power $P_{batt}$')
+ax3.axhline(y=0, color='black', linestyle='-', alpha=0.4)
+ax3.axhline(y=p_batt, color='#1a365d', linestyle='--', alpha=0.7, label=f'Net: {p_batt:+.2f}W')
+ax3.set_xlabel("Time ($s$)", fontsize=10, fontweight='bold')
+ax3.set_ylabel("Power (W)", fontsize=9, fontweight='bold')
+ax3.set_title("3️⃣ Battery Management Power (Charging / Discharging)", fontsize=11, fontweight='bold', color='#1a365d')
+ax3.set_ylim(-2.5, 2.5)
+ax3.legend(loc='upper right', frameon=True, facecolor='white')
+ax3.grid(True, linestyle=':', alpha=0.6)
 
 plt.tight_layout()
 st.pyplot(fig)
 
 st.markdown("---")
-st.markdown("<p style='text-align: center; color: #718096; font-size: 13pt;'>ECE270 Signals and Systems Course Project | Group 05 | High-Speed Interactive Dashboard</p>", unsafe_allow_html=True)
-
-
-
+st.markdown("<p style='text-align: center; color: #718096; font-size: 12pt;'>ECE270 Signals and Systems Course Project | Group 05</p>", unsafe_allow_html=True)
