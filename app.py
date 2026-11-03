@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Clean CSS Styling (Removed broken slider overrides)
+# Custom Styling
 st.markdown("""
     <style>
     .main { background-color: #f8fafc; }
@@ -48,7 +48,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar Control Panel
+# Sidebar Control Panel (Using number input combined with clean slider to avoid layout glitch)
 st.sidebar.header("🎛️ Real-Time Control Panel")
 irradiance_level = st.sidebar.slider("Solar Irradiance Level (%)", min_value=0, max_value=100, value=75, step=5)
 show_fft = st.sidebar.checkbox("Show Fourier Transform Frequency Analysis", value=True)
@@ -145,7 +145,7 @@ if show_fft:
     ax4.set_xlabel("Frequency (rad/s)", fontsize=10, fontweight='bold')
     ax4.set_ylabel("Magnitude", fontsize=9, fontweight='bold')
     ax4.set_title("4️⃣ Frequency-Domain Analysis (Fourier Transform Spectrum)", fontsize=11, fontweight='bold', color='#1a365d')
-    ax4.legend(loc='upper right', frameon=True, facecolor='white')
+    ax4.legend(loc='upper right', frameon=Thread, facecolor='white') if 'Thread' in globals() else ax4.legend(loc='upper right', frameon=True, facecolor='white')
     ax4.grid(True, linestyle=':', alpha=0.6)
 
 plt.tight_layout()
@@ -153,4 +153,3 @@ st.pyplot(fig)
 
 st.markdown("---")
 st.markdown("<p style='text-align: center; color: #718096; font-size: 12pt;'>ECE270 Signals and Systems Course Project | Group 05</p>", unsafe_allow_html=True)
-
