@@ -9,8 +9,8 @@ st.set_page_config(
     layout="wide"
 )
 
-def show_interactive_lab():
-    # تصميم CSS جديد كلياً بألوان عصرية وتفاعلية
+def show_all_powers_dashboard():
+    # تصميم CSS عصري وأنيق للواجهة الموحدة
     st.markdown("""
         <style>
         .stApp {
@@ -44,6 +44,15 @@ def show_interactive_lab():
         .solar-card { border-left-color: #F59E0B !important; }
         .battery-card { border-left-color: #10B981 !important; }
         .load-card { border-left-color: #6366F1 !important; }
+        
+        .section-box {
+            background: #FFFFFF;
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02);
+            margin-bottom: 25px;
+        }
         </style>
     """, unsafe_allow_html=True)
 
@@ -51,11 +60,11 @@ def show_interactive_lab():
     st.markdown("""
         <div class='main-header'>
             <h1 style='margin:0; font-size: 28px;'>⚡ Interactive Renewable Energy & FFT Laboratory</h1>
-            <p style='margin:5px 0 0 0; color: #E2E8F0; font-size: 15px;'>Signals & Systems Dynamic Analysis Suite</p>
+            <p style='margin:5px 0 0 0; color: #E2E8F0; font-size: 15px;'>Signals & Systems Dynamic Analysis Suite - All System Powers</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # لوحة التحكم التفاعلية العلوية
+    # لوحة التحكم التفاعلية العلوية (سلايدر 0 إلى 100%)
     with st.container():
         st.markdown("<div class='control-box'>", unsafe_allow_html=True)
         st.markdown("### 🎛️ Real-Time Simulation Control")
@@ -74,7 +83,7 @@ def show_interactive_lab():
     current_battery_power = 3.7 * (1.0 - irr_factor)
     current_load_power = 1.5
 
-    # عرض بطاقات المؤشرات الحية (Live Metrics)
+    # عرض بطاقات المؤشرات الحية
     col_m1, col_m2, col_m3 = st.columns(3)
     with col_m1:
         st.markdown(f"""
@@ -117,41 +126,48 @@ def show_interactive_lab():
     p_load = np.full_like(t, 1.5)
     mag_load = np.where((omega == 0), 2.5, np.abs(np.sin(omega) / (omega + 1e-5)) * 1.5)
 
-    # استخدام التبويبات (Tabs) لجعل الواجهة أكثر تفاعلية وتنظيماً
-    tab1, tab2, tab3 = st.tabs(["☀️ Solar Panel Analysis", "🔋 Battery Storage Analysis", "💡 LED Load Analysis"])
-
-    with tab1:
-        st.markdown("### Solar Generation Performance")
+    # دالة عرض القسم لكل باور مع رسوماته جنباً إلى جنب
+    def render_power_section(title, icon, p_data, mag_data, time_desc, mag_desc):
+        st.markdown(f"### {icon} {title}")
+        st.markdown("<div class='section-box'>", unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
-            st.markdown("**📉 Time Domain ($t \ge 0$)**")
-            st.line_chart(pd.DataFrame({"Power (W)": p_solar}, index=t), height=240)
+            st.markdown(f"**📉 Time Domain ($t \ge 0$):** `{time_desc}`")
+            st.line_chart(pd.DataFrame({"Power (W)": p_data}, index=t), height=220)
         with c2:
-            st.markdown("**📊 Two-Sided Magnitude Spectrum ($\omega$)**")
-            st.line_chart(pd.DataFrame({"Magnitude": mag_solar}, index=omega), height=240)
+            st.markdown(f"**📊 Two-Sided Magnitude Spectrum ($\omega$):** `{mag_desc}`")
+            st.line_chart(pd.DataFrame({"Magnitude": mag_data}, index=omega), height=220)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    with tab2:
-        st.markdown("### Battery Buffer & Compensation Response")
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**📉 Time Domain ($t \ge 0$)**")
-            st.line_chart(pd.DataFrame({"Power (W)": p_battery}, index=t), height=240)
-        with c2:
-            st.markdown("**📊 Two-Sided Magnitude Spectrum ($\omega$)**")
-            st.line_chart(pd.DataFrame({"Magnitude": mag_battery}, index=omega), height=240)
+    # --- 1. Solar Panel ---
+    render_power_section(
+        "Solar Panel Power Generation ($P_{solar}$)", 
+        "☀️", 
+        p_solar, mag_solar, 
+        f"Active Output (Peak ~ {current_solar_peak:.1f}W, Max 6W)", 
+        "Two-sided harmonic impulse spectrum"
+    )
 
-    with tab3:
-        st.markdown("### Regulated LED Load Consumption")
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**📉 Time Domain ($t \ge 0$)**")
-            st.line_chart(pd.DataFrame({"Power (W)": p_load}, index=t), height=240)
-        with c2:
-            st.markdown("**📊 Two-Sided Magnitude Spectrum ($\omega$)**")
-            st.line_chart(pd.DataFrame({"Magnitude": mag_load}, index=omega), height=240)
+    # --- 2. Battery Storage ---
+    render_power_section(
+        "Battery Storage Buffer Response ($P_{battery}$)", 
+        "🔋", 
+        p_battery, mag_battery, 
+        "Buffer / Discharge Transition (Max 3.7W)", 
+        "Symmetric frequency response curve"
+    )
+
+    # --- 3. LED Load ---
+    render_power_section(
+        "LED Load Stable Consumption ($P_{load}$)", 
+        "💡", 
+        p_load, mag_load, 
+        "Constant Regulated Power for Small LED (~1.5W)", 
+        "DC component and Sinc spectral lobes"
+    )
 
     st.markdown("---")
-    st.success(f"🌟 **Interactive Lab Status:** Irradiance successfully set to **{irradiance_percent}%**. All metrics, time responses, and two-sided spectra are dynamically updated!")
+    st.success(f"🌟 **System Status:** Irradiance is successfully set to **{irradiance_percent}%**. All three power components and their frequency spectra are displayed below in real-time!")
 
 # استدعاء الدالة الرئيسية
-show_interactive_lab()
+show_all_powers_dashboard()
