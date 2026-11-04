@@ -2,71 +2,114 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-# إعدادات الصفحة بتصميم عريض
-st.set_page_config(page_title="Renewable Energy FFT Dashboard", layout="wide")
+# إعدادات الصفحة
+st.set_page_config(
+    page_title="Advanced Renewable Energy FFT Dashboard",
+    page_icon="⚡",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-def show_advanced_renewable_fft():
-    # تصميم CSS مخصص ومميز للواجهة (Modern UI Design)
+def show_ultimate_dashboard():
+    # تصميم CSS احترافي وعصري جداً للواجهة
     st.markdown("""
         <style>
-        .main-header {
-            font-size: 28px;
+        /* خلفية عامة وتنسيق الخطوط */
+        .main {
+            background-color: #0F172A;
+        }
+        
+        /* الهيدر الرئيسي */
+        .hero-banner {
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid #334155;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+        .hero-title {
+            font-size: 32px;
             font-weight: 800;
-            color: #0F172A;
-            text-align: center;
-            margin-bottom: 5px;
+            color: #F8FAFC;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
-        .sub-header {
-            text-align: center;
-            color: #475569;
-            font-size: 15px;
-            margin-bottom: 30px;
+        .hero-subtitle {
+            color: #94A3B8;
+            font-size: 16px;
+            font-weight: 400;
         }
-        .control-card {
-            background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
+
+        /* لوحة التحكم */
+        .control-panel {
+            background: linear-gradient(135deg, #1E293B 0%, #111827 100%);
             padding: 25px;
             border-radius: 16px;
-            border: 1px solid #CBD5E1;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
+            border: 1px solid #374151;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
         }
+
+        /* بطاقات الإشارات والرسومات */
         .signal-card {
-            background-color: #FFFFFF;
-            padding: 20px;
-            border-radius: 14px;
-            border: 1px solid #E2E8F0;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03);
-            margin-bottom: 20px;
+            background-color: #1E293B;
+            padding: 22px;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            margin-bottom: 25px;
+            transition: transform 0.2s ease;
+        }
+        .signal-card:hover {
+            border-color: #3B82F6;
+        }
+        
+        /* عناوين البطاقات */
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #F1F5F9;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # الهيدر والعنوان بتصميم عصري
-    st.markdown("<div class='main-header'>⚡ Advanced Renewable Energy FFT Analysis Dashboard</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sub-header'>Signals & Systems Project • Solar Generation, Battery Storage, and LED Load Frequency Domain Evaluation</div>", unsafe_allow_html=True)
+    # عنوان الواجهة الفخم
+    st.markdown("""
+        <div class='hero-banner'>
+            <div class='hero-title'>⚡ Renewable Energy & FFT Analysis Dashboard</div>
+            <div class='hero-subtitle'>Signals & Systems Project • Real-Time Dynamic Evaluation of Solar, Battery & LED Load</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    # لوحة التحكم بتصميم أنيق (سلايدر النسبة المئوية 0 - 100%)
+    # لوحة التحكم التفاعلية
     with st.container():
-        st.markdown("<div class='control-card'>", unsafe_allow_html=True)
-        st.markdown("### 🎛️ System Control Panel")
+        st.markdown("<div class='control-panel'>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #F8FAFC; margin-bottom: 15px;'>🎛️ System Control Panel</h3>", unsafe_allow_html=True)
         
-        # سلايدر شدة الإضاءة من 0 إلى 100%
-        irradiance_percent = st.slider(
-            "Solar Irradiance / Light Intensity Level (G):", 
-            min_value=0, max_value=100, value=80, step=1,
-            help="Adjust the sunlight percentage hitting the solar panel (0% to 100%)."
-        )
-        
-        # تحويل النسبة المئوية إلى عامل ضرب رياضي (0.0 إلى 1.0)
+        col_s1, col_s2 = st.columns([3, 1])
+        with col_s1:
+            irradiance_percent = st.slider(
+                "Solar Irradiance / Light Intensity Level (G):", 
+                min_value=0, max_value=100, value=75, step=1,
+                help="Adjust the sunlight percentage hitting the solar panel (0% to 100%)."
+            )
+        with col_s2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.metric(label="Irradiance State", value=f"{irradiance_percent}%")
+            
         irr_factor = irradiance_percent / 100.0
-        
-        st.markdown(f"**Current Irradiance State:** `{irradiance_percent}%` (Multiplier: `{irr_factor:.2f}`)")
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # إعداد المحاور (الزمن موجب t >= 0، والترددات متماثلة تشمل السالب والموجبomega)
-    t = np.linspace(0, 3, 300)          # الزمن من 0 إلى 3 ثوانٍ
-    omega = np.linspace(-15, 15, 300)   # الترددات تشمل النطاق السالب والموجب
-    omega_val = 4.0                     # تردد النظام الأساسي
+    # إعداد المحاور والبيانات (الزمن من 0 فصاعداً، والترددات ثنائية الطرف Omega)
+    t = np.linspace(0, 3, 300)
+    omega = np.linspace(-15, 15, 300)
+    omega_val = 4.0
 
     # --- 1. Solar Panel Power (Max = 6W) ---
     p_solar = 6.0 * irr_factor * (1.0 + 0.1 * np.cos(omega_val * t))
@@ -80,52 +123,52 @@ def show_advanced_renewable_fft():
     p_load = np.full_like(t, 1.5)
     mag_load = np.where((omega == 0), 2.5, np.abs(np.sin(omega) / (omega + 1e-5)) * 1.5)
 
-    # دالة عرض الأقسام بتصميم بطاقات منفصلة ونظيفة
-    def render_modern_section(title, icon, time_data, mag_data, time_desc, mag_desc):
-        st.markdown(f"### {icon} {title}")
-        st.markdown("<div class='signal-card'>", unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
+    # دالة عرض البطاقات بتصميم أنيق
+    def render_dashboard_card(title, icon, time_data, mag_data, time_desc, mag_desc):
+        st.markdown(f"<div class='signal-card'>", unsafe_allow_html=True)
+        st.markdown(f"<div class='card-title'>{icon} {title}</div>", unsafe_allow_html=True)
         
+        col1, col2 = st.columns(2)
         with col1:
-            st.markdown(f"**📉 Time Domain ($t \ge 0$):** `{time_desc}`")
+            st.markdown(f"<span style='color: #94A3B8; font-size: 14px;'>📉 Time Domain ($t \ge 0$): <b>{time_desc}</b></span>", unsafe_allow_html=True)
             df_t = pd.DataFrame({"Power (W)": time_data}, index=t)
-            st.line_chart(df_t, height=210)
+            st.line_chart(df_t, height=220)
             
         with col2:
-            st.markdown(f"**📊 Magnitude Spectrum (Two-Sided $\omega$):** `{mag_desc}`")
+            st.markdown(f"<span style='color: #94A3B8; font-size: 14px;'>📊 Magnitude Spectrum (Two-Sided $\omega$): <b>{mag_desc}</b></span>", unsafe_allow_html=True)
             df_f = pd.DataFrame({"Magnitude": mag_data}, index=omega)
-            st.line_chart(df_f, height=210)
+            st.line_chart(df_f, height=220)
             
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # عرض المكونات الثلاثة بتصميم الواجهة الجديد
-    render_modern_section(
-        "Solar Panel Power ($P_{solar}$)", 
+    # عرض المكونات الثلاثة داخل البطاقات العصرية
+    render_dashboard_card(
+        "Solar Panel Power Generation ($P_{solar}$)", 
         "☀️", 
         p_solar, mag_solar, 
-        f"Active Generation (Peak ~ {6.0*irr_factor:.1f}W, Max 6W)", 
+        f"Active Output (Peak ~ {6.0*irr_factor:.1f}W, Max 6W)", 
         "Two-sided harmonic impulse spectrum"
     )
 
-    render_modern_section(
-        "Battery Storage Power ($P_{battery}$)", 
+    render_dashboard_card(
+        "Battery Storage Buffer Response ($P_{battery}$)", 
         "🔋", 
         p_battery, mag_battery, 
-        "Buffer/Discharge Transition (Max 3.7W)", 
+        "Buffer / Discharge Transition (Max 3.7W)", 
         "Symmetric frequency response curve"
     )
 
-    render_modern_section(
-        "LED Load Power ($P_{load}$)", 
+    render_dashboard_card(
+        "LED Load Stable Consumption ($P_{load}$)", 
         "💡", 
         p_load, mag_load, 
-        "Constant Stable Power for Small LED (~1.5W)", 
+        "Constant Regulated Power for Small LED (~1.5W)", 
         "DC component and Sinc spectral lobes"
     )
 
-    # صندوق الحالة والتأكيد الأكاديمي
+    # صندوق الحالة النهائي
     st.markdown("---")
-    st.success(f"🌟 **System Status Active:** Irradiance is successfully configured to **{irradiance_percent}%**. All time-domain and two-sided frequency-domain spectra are updating in real-time according to system parameters!")
+    st.success(f"🌟 **Dashboard Operational:** Solar irradiance is locked at **{irradiance_percent}%**. All system components and frequency domains are fully synchronized and responding in real-time!")
 
-# استدعاء الدالة لتظهر على الشاشة
-show_advanced_renewable_fft()
+# استدعاء الدالة
+show_ultimate_dashboard()
