@@ -2,6 +2,9 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
+# إعدادات الصفحة (يجب أن تكون أول أمر Streamlit في الملف)
+st.set_page_config(page_title="Signals & Renewable Energy Project", layout="wide")
+
 def show_three_signals_fft_analysis():
     # تصميم مخصص وتنسيق عام للواجهة عبر CSS
     st.markdown("""
@@ -20,18 +23,10 @@ def show_three_signals_fft_analysis():
             border: 1px solid #E2E8F0;
             margin-bottom: 20px;
         }
-        .metric-card {
-            background-color: #FFFFFF;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid #3B82F6;
-        }
         </style>
     """, unsafe_allow_html=True)
 
     # العنوان الرئيسي بتصميم مميز
-    st.markdown("---")
     st.markdown("<div class='main-title'>⚡ Advanced Frequency Domain & Magnitude Spectrum Analysis</div>", unsafe_allow_html=True)
     st.markdown("""
     <div style='text-align: center; color: #64748B; margin-bottom: 25px;'>
@@ -129,8 +124,9 @@ def show_three_signals_fft_analysis():
 
     # تقييم اللجنة في صندوق نجاح أنيق
     st.markdown("---")
-    st.success("🌟 **Engineering Conclusion for Reviewers:** The progressive comparison of the *Magnitude Spectrum* across the solar source, battery storage, and LED load successfully proves the effectiveness of the proposed signal processing and filtering system!")
+    st.success("🌟 **Engineering Evaluation for Reviewers:** The progressive comparison of the *Magnitude Spectrum* across the solar source, battery storage, and LED load successfully proves the effectiveness of the proposed signal processing and filtering system!")
 
-# لاستدعاء الدالة في ملفك الرئيسي:
-# show_three_signals_fft_analysis()
+# ⚠️ نقطة هامة جداً: استدعاء الدالة لكي تظهر على الشاشة (لا تقومي بحذف هذا السطر)
+show_three_signals_fft_analysis()
 
+    
