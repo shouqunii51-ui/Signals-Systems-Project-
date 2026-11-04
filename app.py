@@ -2,11 +2,11 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-# إعدادات الصفحة (يجب أن تكون أول أمر Streamlit في الملف)
-st.set_page_config(page_title="Signals & Renewable Energy Project", layout="wide")
+# إعدادات الصفحة
+st.set_page_config(page_title="Solar Panel & Signals Project", layout="wide")
 
-def show_three_signals_fft_analysis():
-    # تصميم مخصص وتنسيق عام للواجهة عبر CSS
+def show_solar_intensity_analysis():
+    # تصميم مخصص للواجهة
     st.markdown("""
         <style>
         .main-title {
@@ -26,27 +26,30 @@ def show_three_signals_fft_analysis():
         </style>
     """, unsafe_allow_html=True)
 
-    # العنوان الرئيسي بتصميم مميز
-    st.markdown("<div class='main-title'>⚡ Advanced Frequency Domain & Magnitude Spectrum Analysis</div>", unsafe_allow_html=True)
+    # العنوان الرئيسي
+    st.markdown("<div class='main-title'>☀️ Solar Panel Power & Magnitude Spectrum Analysis</div>", unsafe_allow_html=True)
     st.markdown("""
     <div style='text-align: center; color: #64748B; margin-bottom: 25px;'>
-        Evaluating system stability, inverter switching ripples, and environmental noise propagation across 
-        <b>Solar Generation</b>, <b>Battery Storage</b>, and <b>LED Load</b>.
+        Analyzing the dynamic response of the <b>Solar Panel</b> when changing <b>Solar Irradiance (Light Intensity)</b> 
+        and observing its Fast Fourier Transform (FFT) Magnitude Spectrum.
     </div>
     """, unsafe_allow_html=True)
 
-    # لوحة التحكم الجانبية أو العلوية في صندوق أنيق
+    # لوحة التحكم بسلايدر واحد فقط لشدة الإضاءة
     with st.container():
         st.markdown("<div class='section-box'>", unsafe_allow_html=True)
-        st.markdown("### 🎛️ Interactive Simulation Parameters")
-        col_c1, col_c2 = st.columns(2)
-        with col_c1:
-            switching_freq = st.slider("Inverter / Switching Frequency (Hz):", min_value=10, max_value=50, value=20)
-        with col_c2:
-            environmental_noise = st.slider("Solar Irradiance Fluctuation (Noise Level):", min_value=0.0, max_value=0.8, value=0.15, step=0.05)
+        st.markdown("### 🎛️ Control Panel")
+        
+        # سلايدر شدة الإضاءة فقط
+        irradiance = st.slider(
+            "Solar Irradiance / Light Intensity (W/m² or Level):", 
+            min_value=0.5, max_value=3.0, value=1.5, step=0.1,
+            help="Controls the light intensity level hitting the solar panel."
+        )
+        
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # إعدادات الزمن ومعدل أخذ العينات
+    # إعدادات الزمن
     fs = 200  
     T = 2.0   
     t = np.linspace(0, T, int(fs * T), endpoint=False)
@@ -55,78 +58,34 @@ def show_three_signals_fft_analysis():
     positive_mask = fft_freqs >= 0
     f_axis = fft_freqs[positive_mask]
 
-    # --- 1. Solar Panel Power Signal ---
-    solar_transition = np.where(t < 1.0, 1.2, 2.0)
-    solar_ripples = 0.3 * np.sin(2 * np.pi * switching_freq * t)
-    solar_noise = environmental_noise * np.random.normal(0, 1, n)
-    p_solar = solar_transition + solar_ripples + solar_noise
+    # توليد إشارة طاقة الألواح الشمسية بناءً على شدة الإضاءة المحددة
+    # انتقال مفاجئ (Step) يتأثر بشدة الإضاءة + قليل من التشويش الواقعي
+    solar_transition = np.where(t < 1.0, 1.0 * irradiance, 1.8 * irradiance)
+    noise = 0.1 * np.random.normal(0, 1, n)
+    p_solar = solar_transition + noise
 
-    # --- 2. Battery Storage Power Signal ---
-    battery_transition = np.where(t < 1.0, 0.8, 0.5)
-    battery_ripples = 0.1 * np.sin(2 * np.pi * switching_freq * t)
-    p_battery = battery_transition + battery_ripples + (0.5 * solar_noise)
+    # حساب تحويل فورييه (Magnitude Spectrum)
+    fft_vals = np.fft.fft(p_solar)
+    mag_solar = (2.0 / n) * np.abs(fft_vals[positive_mask])
 
-    # --- 3. LED Load Power Signal ---
-    load_transition = np.where(t < 1.0, 2.0, 2.5)
-    load_ripples = 0.05 * np.sin(2 * np.pi * switching_freq * t)
-    p_load = load_transition + load_ripples
-
-    def compute_magnitude_spectrum(signal):
-        fft_vals = np.fft.fft(signal)
-        return (2.0 / n) * np.abs(fft_vals[positive_mask])
-
-    mag_solar = compute_magnitude_spectrum(p_solar)
-    mag_battery = compute_magnitude_spectrum(p_battery)
-    mag_load = compute_magnitude_spectrum(p_load)
-
-    # --- دالة لعرض الأقسام بتصميم منظم ---
-    def render_signal_section(title, icon, p_signal, m_signal, desc_time, desc_fft):
-        st.markdown(f"### {icon} {title}")
-        st.markdown("<div class='section-box'>", unsafe_allow_html=True)
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown(f"**📉 Time Domain:** `{desc_time}`")
-            df_time = pd.DataFrame({"Power (W)": p_signal}, index=t)
-            st.line_chart(df_time, height=200)
-            
-        with col2:
-            st.markdown(f"**📊 Magnitude Spectrum:** `{desc_fft}`")
-            df_fft = pd.DataFrame({"Magnitude": m_signal}, index=f_axis)
-            st.line_chart(df_fft, height=200)
-            
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    # --- عرض المكونات الثلاثة ---
-    render_signal_section(
-        "1. Solar Panel Power Source ($P_{solar}$)", 
-        "☀️", 
-        p_solar, mag_solar, 
-        "Step Transition + Environmental Noise", 
-        "High-frequency noise & Harmonics Peaks"
-    )
-
-    render_signal_section(
-        "2. Battery Storage Response ($P_{battery}$)", 
-        "🔋", 
-        p_battery, mag_battery, 
-        "Damping & Buffer Response", 
-        "Damped Ripples & Stabilized Spectrum"
-    )
-
-    render_signal_section(
-        "3. LED Load Output ($P_{load}$)", 
-        "💡", 
-        p_load, mag_load, 
-        "Clean & Stable Regulated Output", 
-        "Highly Filtered (Minimal Harmonics)"
-    )
-
-    # تقييم اللجنة في صندوق نجاح أنيق
-    st.markdown("---")
-    st.success("🌟 **Engineering Evaluation for Reviewers:** The progressive comparison of the *Magnitude Spectrum* across the solar source, battery storage, and LED load successfully proves the effectiveness of the proposed signal processing and filtering system!")
-
-# ⚠️ نقطة هامة جداً: استدعاء الدالة لكي تظهر على الشاشة (لا تقومي بحذف هذا السطر)
-show_three_signals_fft_analysis()
-
+    # عرض النتائج في صندوق أنيق ومنظم
+    st.markdown("### 📊 Solar Panel Output & Spectrum")
+    st.markdown("<div class='section-box'>", unsafe_allow_html=True)
     
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("**📉 Time Domain:** `Solar Power Generation Over Time`")
+        df_time = pd.DataFrame({"Power (W)": p_solar}, index=t)
+        st.line_chart(df_time, height=220)
+        
+    with col2:
+        st.markdown("**📊 Magnitude Spectrum:** `Frequency Domain Analysis`")
+        df_fft = pd.DataFrame({"Magnitude": mag_solar}, index=f_axis)
+        st.line_chart(df_fft, height=220)
+        
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.success(f"🌟 **Status:** Irradiance level set to **{irradiance}**. Notice how changing light intensity scales the power and shifts the spectrum accordingly!")
+
+# استدعاء الدالة لتظهر على الشاشة
+show_solar_intensity_analysis()
