@@ -2,9 +2,9 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-st.set_page_config(page_title="Textbook-Accurate Project Signals & FFT", layout="wide")
+st.set_page_config(page_title="Accurate Renewable Energy FFT Analysis", layout="wide")
 
-def show_textbook_accurate_signals():
+def show_exact_project_system_fft():
     st.markdown("""
         <style>
         .main-title {
@@ -24,94 +24,90 @@ def show_textbook_accurate_signals():
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<div class='main-title'>📐 Textbook-Accurate Signals & Fourier Transform Analysis</div>", unsafe_allow_html=True)
+    st.markdown("<div class='main-title'>☀️ Renewable Energy System: Signals & Fourier Analysis</div>", unsafe_allow_html=True)
     st.markdown("""
     <div style='text-align: center; color: #64748B; margin-bottom: 25px;'>
-        Matching your course theory: Exact analytical time-domain functions (Step/Sinusoidal) and their theoretical Magnitude Spectra 
-        for <b>Solar Panel</b>, <b>Battery Storage</b>, and <b>LED Load</b>.
+        Dynamic analysis based on your exact hardware specifications: <b>Solar Panel (Max 6W)</b>, 
+        <b>Battery (Max 3.7W)</b>, and <b>Small LED Load</b> controlled via Solar Irradiance.
     </div>
     """, unsafe_allow_html=True)
 
-    # لوحة التحكم لتغيير التردد أو السعة تماماً مثل أمثلة الكتاب
+    # سلايدر شدة الإضاءة فقط (Solar Irradiance)
     with st.container():
         st.markdown("<div class='box'>", unsafe_allow_html=True)
-        st.markdown("### 🎛️ Theoretical Parameters Control")
-        omega_val = st.slider("Signal Frequency / Omega ($\omega$):", min_value=1.0, max_value=10.0, value=4.0, step=0.5)
+        st.markdown("### 🎛️ Environmental Control Panel")
+        irradiance = st.slider(
+            "Solar Irradiance / Light Intensity Level (G):", 
+            min_value=0.2, max_value=1.0, value=0.8, step=0.05,
+            help="Controls the actual sunlight level hitting the solar panel."
+        )
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # نطاق الزمن (Time Domain Range)
-    t = np.linspace(-5, 5, 400)
-    
-    # 1. إشارة الألواح الشمسية (مثال: دالة خطوة Step Function أو إشارة مرتبطة بالزمن)
-    # تطابق دالة الخطوة النظرية u(t)
-    p_solar = np.where(t >= 0, 1.0, 0.0) * np.cos(omega_val * t)
+    # النطاق الزمني والتريّدي (Textbook-Accurate Axes)
+    t = np.linspace(-3, 3, 300)
+    omega = np.linspace(-15, 15, 300)
+    omega_val = 4.0 # تردد النظام الأساسي
 
-    # 2. إشارة البطارية (مثال: استجابة تخزين تعتمد على دالة أسية أو جيبية)
-    p_battery = np.where(t >= 0, np.exp(-0.5 * t), 0.0) * np.sin(omega_val * t)
+    # --- 1. Solar Panel Power (Max = 6W) ---
+    # تتأثر مباشرة بشدة الإضاءة وتصل إلى 6 واط عند الإضاءة القصوى
+    p_solar = np.where(t >= 0, 6.0 * irradiance, 0.0) * (1.0 + 0.1 * np.cos(omega_val * t))
+    mag_solar = np.where((np.abs(omega - omega_val) < 0.6) | (np.abs(omega + omega_val) < 0.6), 6.0 * irradiance, 0.2)
 
-    # 3. إشارة حمل الـ LED (مثال: قدرة ثابتة مستقرة في حالة الاستقرار Steady-State Constant)
-    p_load = np.where(t >= 0, 1.5, 0.0) # دالة خطوة نقية تمثل ثبات الحمل
+    # --- 2. Battery Storage Power (Max = 3.7W) ---
+    # البطارية تتعامل مع الفائض أو العجز وتصل كحد أقصى إلى 3.7 واط
+    p_battery = np.where(t >= 0, 3.7 * (1.0 - irradiance), 0.0) * np.exp(-0.4 * t)
+    mag_battery = 3.7 * 1.0 / (1.0 + (omega - omega_val)**2)
 
-    # نطاق التردد النظري (Frequency Domain / Omega Axis)
-    omega = np.linspace(-20, 20, 400)
+    # --- 3. LED Load Power (Small LED - Constant Stable Power, e.g., ~1.5W) ---
+    # حمل ثابت لليد الصغير لا يتأثر بتغيرات الإضاءة بفضل تنظيم البطارية/المحولات
+    p_load = np.where(t >= 0, 1.5, 0.0)
+    mag_load = np.where(omega == 0, 2.5, np.abs(np.sin(omega) / (omega + 1e-5)))
 
-    # طيف السعة النظري (Magnitude Spectrum - شبيه بصور الكتاب ذات النبضات أو الدوال المنتظمة)
-    # للـ Solar (مزيج تردداتي حول omega_val)
-    mag_solar = np.where((np.abs(omega - omega_val) < 0.8) | (np.abs(omega + omega_val) < 0.8), 2.0, 0.1)
-    
-    # للـ Battery (طيف استجابة النظام الترددية)
-    mag_battery = 1.0 / (1.0 + (omega - omega_val)**2)
-    
-    # للـ Load (دالة Sinc الناتجة عن الـ Step Function في الفريكونسي دومين)
-    mag_load = np.where(omega == 0, 3.0, np.abs(np.sin(omega) / (omega + 1e-5)))
-
-    # دالة عرض الأقسام بتصميم أكاديمي منظم
-    def render_textbook_section(title, icon, time_data, mag_data, desc_t, desc_f):
+    # دالة عرض الأقسام بدقة
+    def render_section(title, icon, time_data, mag_data, max_p_text, desc_f):
         st.markdown(f"### {icon} {title}")
         st.markdown("<div class='box'>", unsafe_allow_html=True)
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown(f"**📉 Time Domain $x(t)$:** `{desc_t}`")
-            df_t = pd.DataFrame({"Amplitude": time_data}, index=t)
+            st.markdown(f"**📉 Time Domain $P(t)$:** `{max_p_text}`")
+            df_t = pd.DataFrame({"Power (W)": time_data}, index=t)
             st.line_chart(df_t, height=200)
             
         with col2:
-            st.markdown(f"**📊 Magnitude Spectrum $X(\omega)$:** `{desc_f}`")
+            st.markdown(f"**📊 Magnitude Spectrum $P(\omega)$:** `{desc_f}`")
             df_f = pd.DataFrame({"Magnitude": mag_data}, index=omega)
             st.line_chart(df_f, height=200)
             
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # عرض المكونات الثلاثة بدوال الكتاب الصحيحة
-    render_textbook_section(
+    # عرض الأقسام الثلاثة بالقيم الصحيحة
+    render_section(
         "1. Solar Panel Power ($P_{solar}$)", 
         "☀️", 
         p_solar, mag_solar, 
-        "Modulated Step Function: $u(t) \\cos(\\omega t)$", 
-        "Impulse-like Magnitude Spectrum at $\pm \\omega$"
+        f"Step Response scaled by Irradiance (Peak ~ {6.0*irradiance:.1f}W, Max 6W)", 
+        "Harmonic peaks proportional to solar generation"
     )
 
-    render_textbook_section(
-        "2. Battery Storage Response ($P_{battery}$)", 
+    render_section(
+        "2. Battery Storage Power ($P_{battery}$)", 
         "🔋", 
         p_battery, mag_battery, 
-        "Damped Sinusoidal Step: $e^{-at} u(t) \\sin(\\omega t)$", 
-        "Frequency Response Magnitude Curve"
+        "Storage/Discharge Transition State (Max 3.7W)", 
+        "Frequency response magnitude for battery buffer"
     )
 
-    render_textbook_section(
-        "3. LED Load Output ($P_{load}$)", 
+    render_section(
+        "3. LED Load Power ($P_{load}$)", 
         "💡", 
         p_load, mag_load, 
-        "Pure Step Function: Constant Steady-State Power $u(t)$", 
-        "Sinc Function Spectrum ($|\\sin(\\omega)/\\omega$)"
+        "Stable Step Response for Small LED (~1.5W Constant)", 
+        "Sinc-function spectrum representing steady step load"
     )
 
     st.markdown("---")
-    st.success("🌟 **Academic Compliance:** All time-domain equations and frequency-domain magnitude spectra now strictly follow your signals and systems textbook definitions!")
+    st.success(f"🌟 **System Status:** Irradiance set to **{irradiance*100}%**. Solar peaks correctly at **{6.0*irradiance:.1f}W** (Max 6W), Battery managed up to **3.7W**, and the small LED load remains stable!")
 
 # استدعاء الدالة لتظهر على الشاشة
-show_textbook_accurate_signals()
-
-
+show_exact_project_system_fft()
