@@ -106,7 +106,7 @@ def show_ultimate_dashboard():
         irr_factor = irradiance_percent / 100.0
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # إعداد المحاور والبيانات (الزمن من 0 فصاعداً، والترددات ثنائية الطرف Omega)
+  
     t = np.linspace(0, 3, 300)
     omega = np.linspace(-15, 15, 300)
     omega_val = 4.0
@@ -123,7 +123,7 @@ def show_ultimate_dashboard():
     p_load = np.full_like(t, 1.5)
     mag_load = np.where((omega == 0), 2.5, np.abs(np.sin(omega) / (omega + 1e-5)) * 1.5)
 
-    # دالة عرض البطاقات بتصميم أنيق
+    
     def render_dashboard_card(title, icon, time_data, mag_data, time_desc, mag_desc):
         st.markdown(f"<div class='signal-card'>", unsafe_allow_html=True)
         st.markdown(f"<div class='card-title'>{icon} {title}</div>", unsafe_allow_html=True)
